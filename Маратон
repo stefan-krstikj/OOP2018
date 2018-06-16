@@ -1,0 +1,188 @@
+
+/*
+Да се дефинира класа Ucesnik за учесник во маратон за кој ќе се чуваат информации за:
+
+    име (динамички алоцирана низа од знаци)
+    пол (bool)
+    возраст (цел број) (5 поени).
+
+За потребите на оваа класа да се преоптоварат потребните конструктори и да се напише соодветен деструктор. (10 поени)
+
+Дополнително за оваа класа да се преоптоварат:
+
+    оператор за споредување > (споредува двајца учесници според возраста) (5 поени)
+    операторот за проследување на излезен тек << кој ќе ги печати името, полот (машки/женски) и возраста, секој во посебен ред. (5 поени)
+
+Да се дефинира класа Maraton за кој се чуваат:
+
+    локација (низа од максимум 100 знаци)
+    низа од Ucesnik објекти (динмички алоцирана низа од објекти од класата Ucesnik)
+    број на учесници (цел број) (5 поени).
+
+За потребите на оваа класа да се преоптоварат потребните конструктори и да се напише соодветен деструктор. (10 поени) Исто така да се имплементираат следните методи:
+
+    оператор += за додавање нов Ucesnik на маратонот Maraton. (10 поени)
+    prosecnoVozrast() вреќа просечена возраст на учесниците на маратонот (5 поени)
+    pecatiPomladi(Ucesnik &u) ги печати сите учесници помлади од учесникот проследен како аргумент на методот. (5 поени)
+*/
+
+#include <iostream>
+#include <cstring>
+
+using namespace std;
+
+// vashiot kod ovde
+
+class Ucesnik{
+private:
+    char *ime;
+    bool pol;
+    int vozrast;
+public:
+    //  argument constructor
+    Ucesnik(const char* ime = "", bool pol = false, int vozrast = 0){
+    	this->ime = new char[strlen(ime)+1];
+        strcpy(this->ime, ime);
+        this->pol = pol;
+        this->vozrast = vozrast;
+    }
+    // deconstructor
+    ~Ucesnik(){
+    	delete[] ime;
+    }
+    // copy constructor
+    Ucesnik (const Ucesnik &u){
+    	this->ime = new char[strlen(u.ime)+1];
+        strcpy(this->ime, u.ime);
+        this->pol = u.pol;
+        this->vozrast = u.vozrast;
+    }
+    
+    // overload = operator
+    Ucesnik &operator=(const Ucesnik &u){
+        if(this!=&u){
+        	delete[] ime;
+        }
+        ime = new char [strlen(u.ime)+1];
+        strcpy(ime, u.ime);
+        pol = u.pol;
+        vozrast = u.vozrast;
+        return *this;
+    }
+    
+    // overload > operator
+    bool operator>(const Ucesnik& p){
+        if (vozrast>p.vozrast)
+            return true;
+        return false;
+    }
+    
+    // overload << operator
+    friend ostream &operator<<(ostream &output, const Ucesnik& p){
+        if (p.pol == false)
+    		output<<p.ime<<endl<<"zhenski"<<endl<<p.vozrast<<endl;
+        else
+            output<<p.ime<<endl<<"mashki"<<endl<<p.vozrast<<endl;
+
+        return output;
+    }
+    friend class Maraton;
+};
+
+class Maraton{
+private:
+    char lokacija[100];
+    Ucesnik *niza;
+    int brUcesnici;
+public:
+    // argument constructor
+    Maraton(const char *lokacija = "", Ucesnik *niza = 0, int brUcesnici = 0){
+    	strcpy(this->lokacija, lokacija);
+        this->brUcesnici = brUcesnici;
+        this->niza = new Ucesnik[brUcesnici];
+        for(int i = 0; i < brUcesnici; i++){
+        	this->niza[i] = niza[i];
+        }
+        
+    }
+    
+    // copy constructor
+    Maraton(const Maraton &m){
+    	strcpy(this->lokacija, m.lokacija);
+        this->brUcesnici = m.brUcesnici;
+        this->niza = new Ucesnik[m.brUcesnici];
+        for(int i = 0; i < m.brUcesnici; i++)
+            this->niza[i] = m.niza[i];
+        
+    }
+    
+    // overload = operator
+    Maraton& operator=(const Maraton &p){
+        if (this != &p){
+    	strcpy(this->lokacija, p.lokacija);
+        this->brUcesnici = p.brUcesnici;
+        delete[] niza;
+        niza = new Ucesnik[p.brUcesnici];
+        for (int i = 0; i<p.brUcesnici; i++)
+            this->niza[i] = p.niza[i];
+        }
+        return *this;
+    }
+    ~Maraton(){
+    	delete[] niza;
+    }
+    
+    // overload += operator
+    Maraton &operator+=(const Ucesnik &from){
+    	Ucesnik *tmp = new Ucesnik[brUcesnici+1];
+        for(int i = 0; i < brUcesnici; i++)
+        	tmp[i] = niza[i];
+        tmp[brUcesnici] = from;
+        brUcesnici++;
+        delete[] niza;
+        niza = tmp;
+        return *this;
+    }
+    
+    // prosecnoVozrast()
+    float prosecnoVozrast(){
+    	float vkupno = 0;
+        for (int i = 0; i < brUcesnici; i++){
+        	vkupno += niza[i].vozrast;
+        }
+        float a = vkupno / brUcesnici;
+        return a;
+    }
+    
+    // pecatiPomladi(Ucesnik &u)
+    void pecatiPomladi(Ucesnik &u){
+    	int maxV = u.vozrast;
+        for(int i = 0; i < brUcesnici; i++){
+        	if(niza[i].vozrast < u.vozrast)
+                cout << niza[i];
+        }
+    }
+};
+
+int main() {
+    char ime[100];
+    bool maski;
+    int vozrast, n;
+    cin >> n;
+    char lokacija[100];
+    cin >> lokacija;
+    Maraton m(lokacija);
+    Ucesnik **u = new Ucesnik*[n];
+    for(int i = 0; i < n; ++i) {
+        cin >> ime >> maski >> vozrast;
+    	u[i] = new Ucesnik(ime, maski, vozrast);
+        m += *u[i];
+    }
+	m.pecatiPomladi(*u[n - 1]);
+    cout << m.prosecnoVozrast() << endl;
+    for(int i = 0; i < n; ++i) {
+        delete u[i];
+    }
+    delete [] u;
+	return 0;
+}
