@@ -36,147 +36,138 @@
 
 */
 
+
 //RESENIE
 #include <iostream>
 #include <cstring>
+
 using namespace std;
 
-class IceCream {
+class IceCream{
 private:
-    char *name;
-    char ingredients[100];
-    float price;
-    int discount;
-    void copy(const IceCream &ic) {
-        name = new char[strlen(ic.name) + 1];
-        strcpy(name, ic.name);
-        strncpy(ingredients, ic.ingredients, 99);
-        ingredients[99] = '\0';
-        price = ic.price;
-        discount = ic.discount;
-    }
+    char *ime;
+    char sostav[100];
+    double cena;
+    int popust;
 public:
-    IceCream(const char *nm = "", const char *ingr = "", float p = 0) {
-        name = new char[strlen(nm) + 1];
-        strcpy(name, nm);
-        strncpy(ingredients, ingr, 99);
-        ingredients[99] = '\0';
-        price = p;
-        discount = 0;
+    IceCream(){
+    	ime = new char[0];
+        strcpy(this->sostav, "");
+        cena = 0;
+        popust = 0;
     }
-
-    IceCream(const IceCream &ic) {
-        copy(ic);
+    IceCream(char *ime, char *sostav, double cena){
+    	this->ime = new char[strlen(ime) + 1];
+        strcpy(this->ime, ime);
+        strcpy(this->sostav, sostav);
+        this->cena = cena;
+        popust = 0;
     }
-
-    IceCream& operator=(const IceCream &ic) {
-        if (this == &ic) return *this;
-        delete [] name;
-        copy(ic);
+    ~IceCream(){ delete[] ime; }
+    IceCream (const IceCream &ic){
+    	this->ime = new char[strlen(ic.ime) + 1];
+        strcpy(this->ime, ic.ime);
+        strcpy(this->sostav, ic.sostav);
+        this->cena = ic.cena;
+        popust = ic.popust;
+    }
+    
+    IceCream &operator=(const IceCream &ic){
+        if(this!=&ic){
+            delete[] ime;
+            this->ime = new char[strlen(ic.ime) + 1];
+            strcpy(this->ime, ic.ime);
+            strcpy(this->sostav, ic.sostav);
+            this->cena = ic.cena;
+            popust = ic.popust;
+        }
         return *this;
     }
-
-    friend ostream& operator<<(ostream &out, const IceCream &ic) {
-        out << ic.name << ": ";
-        out << ic.ingredients << " ";
-        out << ic.price << " ";
-        if (ic.discount > 0) {
-            out << "(" << ic.price * (100 - ic.discount) / 100 << ")";
-        }
+    
+    void setDiscount(int a){
+        if(a >= 0 && a <= 100)
+    		popust = a;
+    }
+    
+    friend ostream &operator<<(ostream &out, IceCream &ic){
+    	out << ic.ime << ": " << ic.sostav << " " << ic.cena << " ";
+        if(ic.popust > 0)
+            out << "(" << ic.cena - ic.cena *ic.popust / 100 << ")";
         return out;
     }
-    void setName(char *n) {
-        delete [] name;
-        name = new char[strlen(n) + 1];
-        strcpy(name, n);
-    }
-
-    IceCream& operator++() {
-        discount += 5;
+    
+    IceCream &operator++(){
+    	popust += 5;
         return *this;
     }
-
-    IceCream operator+(const char* extra) {
+    
+    IceCream operator+(char *newName){
+        char *novoIme = new char[strlen(ime) + strlen(newName) + 4];
+        strcat(novoIme, ime);
+        strcat(novoIme, " + ");
+        strcat(novoIme, newName);
         
-        char* newName = new char[strlen(name) + strlen(extra) + 4];
-        strcat(newName, name);
-        strcat(newName, " + ");
-        strcat(newName, extra);
-        
-        IceCream res(newName, ingredients, price + 10);
-        res.setDiscount(discount);
-        return res;
+        IceCream final(novoIme, sostav, cena+10);
+        final.setDiscount(popust);
+        return final;
     }
     
-    void setName(const char* n) {
-        delete [] name;
-    	name = new char[strlen(n) + 1];
-        strcpy(name, n);
-    }
-    
-    void setDiscount(int d) {
-    	
-        if(d>=0&&d<=100)
-            discount = d;
-    }
-
-    ~IceCream() {
-        delete [] name;
+    void setName (char *name){
+    	delete[] ime;
+        ime = new char[strlen(name)+1];
+        strcpy(ime, name);
     }
 };
 
-class IceCreamShop {
+class IceCreamShop{
 private:
-    char name[50];
-    IceCream *icecreams;
-    int n;
-    void copy(const IceCreamShop &ics) {
-        strcpy(name, ics.name);
-        n = ics.n;
-        icecreams = new IceCream[n];
-        for (int i = 0; i < n; ++i) {
-            icecreams[i] = ics.icecreams[i];
-        }
-    }
+    char ime[50];
+    IceCream *niza;
+    int brojSladoledi;
 public:
-    IceCreamShop(char* nm) {
-        strcpy(name, nm);
-        icecreams = NULL;
-        n = 0;
+    IceCreamShop(char *ime){
+    	strcpy(this->ime, ime);
+        niza = new IceCream[0];
+        brojSladoledi = 0;
     }
-    IceCreamShop(const IceCreamShop &ics) {
-        copy(ics);
+    ~IceCreamShop(){delete[] niza;}
+    IceCreamShop(const IceCreamShop &ics){
+    	strcpy(this->ime, ics.ime);
+        niza = new IceCream[ics.brojSladoledi];
+        for(int i = 0; i < ics.brojSladoledi; i++)
+            niza[i] = ics.niza[i];
+        brojSladoledi = ics.brojSladoledi;
     }
-    IceCreamShop& operator=(const IceCreamShop &ics) {
-        if (this == &ics) return *this;
-        delete [] icecreams;
-        copy(ics);
+    
+   /* IceCreamShop &operator=(const IceCreamShop &ics){
+        if(this!=&ics){
+        	strcpy(this->ime, ics.ime);
+            delete[] niza;
+            niza = new IceCream[ics.brojSladoledi];
+        	for(int i = 0; i < ics.brojSladoledi; i++)
+            	niza[i] = ics.niza[i];
+        	brojSladoledi = ics.brojSladoledi;
+        }
+        return *this;
+    }*/
+    IceCreamShop &operator+=(IceCream &ic){
+    	IceCream *tmp = new IceCream[brojSladoledi + 1];
+        for(int i = 0; i < brojSladoledi; i++){
+        	tmp[i] = niza[i];
+        }
+        tmp[brojSladoledi++] = ic;
+        delete[] niza;
+        niza = tmp;
         return *this;
     }
-    ~IceCreamShop() {
-        delete [] icecreams;
-    }
-
-    IceCreamShop& operator+= (IceCream &ic) {
-        IceCream *tmp = icecreams;
-        icecreams = new IceCream[n + 1];
-        for (int i = 0; i < n; ++i) {
-            icecreams[i] = tmp[i];
-        }
-        icecreams[n] = ic;
-        ++n;
-        delete [] tmp;
-        return *this;
-    }
-
-    friend ostream& operator<<(ostream &out, const IceCreamShop &ics) {
-        cout << ics.name << endl;
-        for (int i = 0; i < ics.n; ++i) {
-            out << ics.icecreams[i] << endl;
-        }
+    
+    friend ostream &operator << (ostream &out, IceCreamShop &ics){
+        out << ics.ime << endl;
+        for(int i = 0; i < ics.brojSladoledi; i++){
+        	out << ics.niza[i] << endl;
+        } 
         return out;
     }
-
 };
 
 int main() {
