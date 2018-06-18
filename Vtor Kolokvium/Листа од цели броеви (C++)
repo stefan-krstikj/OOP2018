@@ -1,0 +1,283 @@
+/*
+
+
+Да се дефинира класа List во која што ќе се чуваат информации за:
+
+    динамички алоцирана низа од цели броеви
+    бројот на броеви во низата (цел број)
+
+За класата да се дефинираат потребните конструктори, деструктор и оператор =. Да се имплементираат и помошните функции:
+
+    int sum () што враќа сума на броевите во листата
+    double average () што враќа просек на проевите во листата
+
+Дополнително, потребно е да се преоптоварат операторите:
+
+    == (две листи се еднакви ако имаат иста сума)
+    << за печатење на листата во формат како во тест примерите
+    >> за внесување на листа од стандарден влез
+    + за собирање на две листи
+        Собирањето може да се изврши само врз листи со иста должина. Резултатот е нова листа во која секој елемент е збир на елементите од двете листи на соодветните позиции пример (2 1) + (2 2) = (4 3). Ако листите се со различна големина, резултантната листа е празна листа.
+    - за одземање на две листи на идентичен пристап како собирањето
+    ++ во префикс и -- постфикс нотација за зголемување/намалување за 1 на секој елемент од листата
+    += за додавање на нов број во листата
+        Дозволено е да има максимум 2 исти броеви во листата
+    [] за пристап до i-иот елемент во листата
+
+Да се имплементира и метод List addList(List l), којшто ќе креира и враќа нова листа со елементите од моменталната и елементите од листата l дадена во аргументот на функцијата.
+*/
+
+#include<iostream>
+#include<cstring>
+#include<cmath>
+
+using namespace std;
+
+class List{
+private:
+    int *broevi;
+    int n;
+public:
+    List(){
+    	broevi = new int[0];
+        n = 0;
+    }
+    List(int *broevi, int n){
+    	this->n = n;
+        this->broevi = new int[n];
+        for(int i = 0; i < n; i++){
+        	this->broevi[i] = broevi[i];
+        }
+    }
+    
+    // copy constr
+    List (const List &l){
+    	this->n = l.n;
+        this->broevi = new int[n];
+        for(int i = 0; i < n; i++){
+        	this->broevi[i] = l.broevi[i];
+        }
+    }
+    
+    // operator =
+    List &operator=(const List &l){
+        if(this!=&l){
+        	delete[] broevi;
+            this->n = l.n;
+            this->broevi = new int[n];
+            for(int i = 0; i < n; i++){
+                this->broevi[i] = l.broevi[i];
+            }
+        }
+        return *this;
+    }
+    
+    ~List(){ 
+        delete[] broevi;
+    }
+    
+    int sum() const{
+    	int tot = 0;
+        for(int i = 0; i < n; i++)
+            tot += broevi[i];
+        return tot;
+    }
+    
+    double average() const{
+    	return (double(sum()) / (double)n);
+    }
+    
+    // overload ==
+    bool operator==(List &l){
+    	return (sum() == l.sum());
+    }
+    
+    friend ostream &operator<<(ostream &out, const List &l){
+        if(l.n == 0){
+        	out << "The list is empty" << endl;
+            return out;
+        }
+    	out << l.n << ": ";
+        for(int i = 0; i < l.n; i++)
+            out << l.broevi[i] << " ";
+        out << "sum: " << l.sum() << " average: " << l.average() << endl;;
+        return out;
+    }
+    
+    friend istream &operator>>(istream &in, List &l){
+    	in >> l.n;
+        l.broevi = new int[l.n];
+        for(int i = 0; i < l.n; i++)
+            in >> l.broevi[i];
+        return in;
+    }
+    
+    List operator+(List &l){
+        if(n != l.n){
+            return List();
+        }
+        else{
+            int *newList = new int[n];
+            for(int i = 0; i < n; i++)
+                newList[i] = broevi[i] + l.broevi[i];
+            return List(newList, n);
+        }
+    }
+    
+    List operator-(List &l){
+    	if(n != l.n)
+            return List();
+        int *newList = new int[n];
+        for(int i = 0; i < n; i++)
+            newList[i] = broevi[i] - l.broevi[i];
+        return List(newList, n);
+    }
+    
+    // prefix ++
+    List &operator++(){
+    	for(int i = 0; i < n; i++)
+            broevi[i]++;
+        return *this;
+    }
+    
+/*    List &operator++(int){
+        List tmp(*this);
+        for(int i = 0; i < n;i++){
+            broevi[i]++;
+        }
+        return tmp;
+    }*/
+    
+    // suffix --
+    List operator--(int){
+    	List tmp(*this);
+        for(int i = 0; i < n; i++)
+            broevi[i]--;
+        return tmp;
+    }
+    
+    List &operator+=(int novBroj){
+    	int flag = 0;
+        for(int i = 0; i < n; i++){
+        	if(broevi[i] == novBroj)
+                flag++;
+        }
+        if(flag <= 1){
+        	int *tmp = new int[n+1];
+            for(int i = 0; i < n; i++)
+                tmp[i] = broevi[i];
+            delete[] broevi;
+            tmp[n++] = novBroj;
+            broevi = tmp;
+        }
+        return *this;
+    }
+    
+    const int &operator[] (int i){
+    	return broevi[i];
+    }
+    
+    List addList(List l){
+        int newSize = n + l.n;
+    	int *tmp = new int[newSize];
+        for(int i = 0; i < n; i++)
+            tmp[i] = broevi[i];
+        for(int i = n, j = 1; i < l.n + n; i++, j++)
+            tmp[i] = l.broevi[j];
+        return List(tmp, n+l.n - 1);
+    }
+};
+
+int main() {
+	
+	int testCase;
+	cin>>testCase;
+	
+	if (testCase==1){
+		cout<<"Testiranje na operatorite << i >>"<<endl;
+		List l;
+		cin >> l;
+		cout<< l;
+	}
+	else if (testCase == 2){
+		cout<<"Testiranje na operatorot = za klasata List"<<endl;
+		List l1;
+		cin >> l1;
+		List l2;
+		l2 = l1;
+		cout << l2;
+	}
+	else if (testCase == 3){
+		//2 test primeri tuka
+		cout << "Testiranje na operatorot +"<<endl;
+		List l1,l2;
+		cin >> l1;
+		cin >> l2;
+		List l3;
+		l3 = l1+l2;
+		cout << l3;
+	}
+	else if (testCase == 4){
+		
+		cout << "Testiranje na operatorot - "<<endl;
+		List l1,l2;
+		cin >> l1;
+		cin >> l2;
+		List l3;
+		l3 = l1-l2;
+		cout << l3;
+	}
+	else if (testCase == 5){
+		cout << "Testiranje na operator ++ vo prefix notacija"<<endl;
+		List l1;
+		cin >> l1;
+		cout << l1;
+		cout << ++l1;
+	}
+	else if (testCase == 6){
+		cout << "Testiranje na operatorot -- vo sufix notacija"<<endl;
+		List l1;
+		cin >> l1;
+		cout << "Pocetna vrednost: " << l1;
+		List l2;
+		l2 = l1--;
+		cout << "Se povikuva ++ vo sufiks: " << l2;
+		cout << "Posle povik: " << l1;		
+	}
+	else if (testCase == 7) {
+		
+		cout << "Testiranje na operator += "<<endl;
+		List l1; 
+		cin >> l1;
+		int n;
+		cin >> n;
+		for (int i=0;i<n;i++){
+			int broj;
+			cin >> broj;
+			l1 += broj;
+		}
+		cout << l1;			
+	}
+	else if (testCase == 8){
+		cout << "Testiranje na operatorot [ ] "<< endl;
+		List l1;
+		cin >> l1;
+		int n;
+		cin >> n;
+		for (int i=0;i<n;i++){
+			int idx;
+			cin >> idx;
+			cout << "List["<< idx <<"] = " << l1[idx] << endl;
+		}			
+	}
+	else {
+		//Dopolnitelno baranje
+		cout <<"Testiranje na addList() metodot"<<endl;
+		List l1,l2;
+		cin >> l1;
+		cin >> l2;
+		cout << l1.addList(l2);
+	}
+    
+    return 0;
+}
