@@ -1,0 +1,301 @@
+/*
+
+
+Да се креира класа PositiveIntegers во која што ќе се чуваат информации за:
+
+    низа од позитивни броеви (>0) (динамички алоцирана низа од цели броеви)
+    број на елементи во низата
+    максимален капацитет на низата
+
+За класата да се имплементираат:
+
+    потребниот конструктор (погледнете во главната функција како се креира објект од оваа класа)
+    метод void increaseCapacity(int c) којшто го зголемува максималниот капацитет на низата за бројот с
+    оператор за додавање на нов број во низата од позитивни броеви +=
+        број се додава ако и само ако
+    оператор за множење * за множење на низата со друг цел број
+        Пример, низата има објекти (1 2 3 4 5) и истата се множи со 2, резултатот ќе биде (1 2 3 4 5)*2 = (2 3 6 8 10)
+    оператор за делење \ за делење на низата до друг цел број
+        потребно е секој елемент од низата да биде делив со тој број, како и делителот не смее да биде нула.
+    оператор [] за пристап до елемент од низата
+
+Потребно е да се дефинираат класи за исклучоци и секој од нив да има метод void message() којшто ќе принта соодветна порака кога исклучокот ќе биде фатен. Можните исклучоци се следните:
+
+    ArithmeticException (се фрла ако се проба да се дели со нула)
+        принта порака Division by zero is not allowed
+    NumbersNotDivisibleException (се фрла ако се проба да се дели низата со некој број, а барем еден елемент од низата не е делив со тој број)
+        принта порака Division by number [делителот] is not supported
+    ArrayFullException (се фрла ако се проба да се додади елемент во низа која и е исполнет максималниот капацитет)
+        принта порака The array is full. Increase the capacity
+    IndexOutOfBoundsException (се фрла доколку се проба да се пристапи до елемент од низата со несоодветен индекс)
+        принта порака Index [индексот] is out of bounds
+    NumberIsNotPositiveException (се фрла доколку се проба да се внесе во низата број што не е позитивен или е нула)
+        принта порака Number [бројот] is not positive integer.
+*/
+
+#include <iostream>
+#include <cstring>
+using namespace std;
+
+class ArithmeticException{
+public:
+    void message() {
+    	cout<<"Division by zero is not allowed"<<endl;
+    }
+
+};
+
+class NumbersNotDivisibleException{
+private:
+    int a;
+public:
+    NumbersNotDivisibleException(int a){
+    	this->a = a;
+    }
+    void message(){
+    	cout << "Division by " << a << " is not supported" << endl;
+    }
+};
+
+class ArrayFullException{
+public:
+    void message(){
+    	cout << "The array is full. Increase the capacity" << endl;
+    }
+};
+
+class IndexOutOfBoundsException{
+private:
+    int i;
+public:
+    IndexOutOfBoundsException(int i){
+    	this->i = i;
+    }
+    
+    void message(){
+    	cout << "Index " << i << " is out of bounds" << endl;
+    }
+};
+
+class NumberIsNotPositiveException{
+private:
+    int a;
+public:
+    NumberIsNotPositiveException(int a){
+    	this->a = a;
+    }
+    void message(){
+    	cout << "Number " << a <<" is not positive integer" << endl; 
+    }
+};
+
+class PositiveIntegers{
+	int *niza;
+    int n;
+    int capacity;
+public:
+    PositiveIntegers(){
+    	capacity = 0;
+        n = 0;
+        niza= new int[0];
+    }
+    PositiveIntegers(int capacity){
+    	this->capacity = capacity;
+        niza = new int[0];
+        n = 0;
+    }
+    
+    PositiveIntegers(const PositiveIntegers &p){
+    	capacity = p.capacity;
+        n = p.n;
+        niza = new int[n];
+        for(int i = 0; i < n; i++)
+            niza[i] = p.niza[i];
+    }
+    
+    PositiveIntegers &operator=(const PositiveIntegers &p){
+        if(this!=&p){
+            capacity = p.capacity;
+            n = p.n;
+            niza = new int[n];
+            for(int i = 0; i < n; i++)
+                niza[i] = p.niza[i];
+        }
+        return *this;
+    }
+    
+    void increaseCapacity(int c){
+    	capacity += c;
+    }
+    
+    PositiveIntegers &operator+=(int a){
+    	// brojot e nad 0 i ima mesto vo array'ot
+        if(n == capacity){
+        	throw ArrayFullException();
+        }
+        if(a <= 0){
+        	throw NumberIsNotPositiveException(a);
+        }
+        int *tmp = new int[n+1];
+        for(int i =0; i < n; i++)
+            tmp[i] = niza[i];
+        delete[] niza;
+        tmp[n++] = a;
+        niza = tmp;
+        return *this;
+    }
+    
+    PositiveIntegers operator*(int a){
+        PositiveIntegers tmp(*this);
+    	for(int i = 0; i < n; i++)
+            tmp.niza[i] = tmp.niza[i] * a;
+        return tmp;
+    }
+    
+    PositiveIntegers operator /(int a){
+    	if(a == 0)
+            throw ArithmeticException();
+       	bool flag = false;
+        for(int i = 0; i < n; i++){
+            if(niza[i] % a != 0){
+                flag = true;
+                
+            }
+        }
+        if(flag)
+            throw NumbersNotDivisibleException(a);
+        
+        PositiveIntegers tmp(*this);
+        
+        for(int i = 0; i < n; i++){
+        	tmp.niza[i] = tmp.niza[i] / a;
+        }
+        return tmp;
+    }
+    
+    int operator[](int i){
+    	if(i > n || i < 0)
+            throw IndexOutOfBoundsException(i);
+        else
+            return niza[i];
+    }
+    
+    void print () {
+		cout<<"Size: "<<n<<" Capacity: "<<capacity<<" Numbers: ";
+		for (int i=0;i<n;i++)
+			cout<<niza[i]<<" ";
+		
+		cout<<endl;
+}
+};
+
+int main() {
+	
+	int n,capacity;
+	cin >> n >> capacity;
+	PositiveIntegers pi (capacity);
+	for (int i=0;i<n;i++){
+		int number;
+		cin>>number;
+        try{
+		pi+=number;
+        }catch (ArrayFullException &a){
+        	a.message();
+        }
+        catch (NumberIsNotPositiveException &a){
+        	a.message();
+        }
+        
+	}
+	cout<<"===FIRST ATTEMPT TO ADD NUMBERS==="<<endl;
+	pi.print();
+	int incCapacity;
+	cin>>incCapacity;
+	pi.increaseCapacity(incCapacity);
+	cout<<"===INCREASING CAPACITY==="<<endl;
+	pi.print();
+	
+	int n1;
+	cin>>n1;
+	for (int i=0;i<n1;i++){
+		int number;
+		cin>>number;
+        try{
+		pi+=number;
+        }catch (ArrayFullException &a){
+        	a.message();
+        }
+        catch (NumberIsNotPositiveException &a){
+        	a.message();
+        }
+	}
+	cout<<"===SECOND ATTEMPT TO ADD NUMBERS==="<<endl;
+	
+    pi.print();	
+	PositiveIntegers pi1;
+	
+	cout<<"===TESTING DIVISION==="<<endl;	
+    try{
+		pi1 = pi/0;
+        pi1.print();
+    }
+    catch (ArithmeticException &a){
+    	a.message();
+    }
+    catch (NumbersNotDivisibleException  &a){
+    	a.message();
+    }
+	
+    
+    
+    try{
+		pi1 = pi/1;
+        pi1.print();
+    }
+    catch (ArithmeticException &a){
+    	a.message();
+    }
+    catch (NumbersNotDivisibleException  &a){
+    	a.message();
+    }
+		
+	
+    try{
+	pi1 = pi/2;
+	pi1.print();
+    }
+    catch (ArithmeticException &a){
+    	a.message();
+    }
+    catch (NumbersNotDivisibleException  &a){
+    	a.message();
+    }
+	
+	cout<<"===TESTING MULTIPLICATION==="<<endl;
+	pi1 = pi*3;
+	pi1.print();
+	
+	
+	cout<<"===TESTING [] ==="<<endl;	
+    try{
+	cout<<"PositiveIntegers[-1] = "<<pi[-1]<<endl;
+    }catch (IndexOutOfBoundsException &a){
+        a.message();}
+    try{
+	cout<<"PositiveIntegers[2] = "<<pi[2]<<endl;
+    }catch (IndexOutOfBoundsException &a){
+        a.message();}
+    try{
+	cout<<"PositiveIntegers[3] = "<<pi[3]<<endl;
+    }catch (IndexOutOfBoundsException &a){
+        a.message();}
+    try{
+	cout<<"PositiveIntegers[12] = "<<pi[12]<<endl;
+    }catch (IndexOutOfBoundsException &a){
+        a.message();}
+	
+	
+	
+	
+	return 0;
+}
