@@ -1,0 +1,238 @@
+/*
+
+Да се дефинира апстрктна класа Number со следните чисто виртуелни методи:
+
+    double doubleValue() -ја враќа децималната вредност на даден број
+    int intValue()- ја враќа целобројната вредност на даден број
+    void print() - печати информации за бројот. (1 поен)
+
+Од оваа класа да се изведат две класи:
+
+    Integer (во која што се чува еден број од тип int)
+    Double (во која што се чува еден број од тип double) (1 поен).
+
+За двете изведени класи да се имплементира соодветен конструктор.
+
+Дополнително да се дефинира класа Numbers во која што ќе се чуваат:
+
+    динамички алоцирана низа од покажувачи кон објекти од класата Number
+    број на елементи во низата од покажувачи
+
+За класата да се имплементира соодветен конструктор (default) , како и: (2 поени)
+
+    операторот += за додавање на броеви во низата од броеви (1 поен)
+    функција void statistics() која што печати информации за броевите во низата: (3 поени)
+
+Count of numbers: [број на броеви во низата
+
+Sum of all numbers: [сума на сите броеви во низата]
+
+Count of integer numbers: [број на цели броеви (Integer)]
+
+Sum of integer numbers: [сума на сите цели броеви (Integer)]
+
+Count of double numbers: [број на децимални броеви (Double)]
+
+Sum of double numbers: [сума на сите децимални броеви (Double)]
+
+    функција void integersLessThan (Integer n) која што ги печати сите цели броеви помали од бројот n (1 поен)
+    функција void doublesBiggerThan (Double n) која што ги печати сите децимални броеви поголеми од бројот n (1 поен)
+
+*/
+
+#include<iostream>
+using namespace std;
+
+class Number {
+    public:
+    //TODO da se deklariraat trite cisto virtuelni metodi
+    virtual double doubleValue() = 0;
+    virtual int intValue() = 0;
+    virtual void print() = 0;
+}; 
+
+class Integer: public Number{ //TODO da se dodadi izraz za nasleduvanje od Number
+    private:
+    //TODO da se deklariraat promenlivite
+    int broj;
+    public:
+    //TODO konstruktor so eden argument
+    Integer(int broj){this->broj = broj;}
+    //TODO da se prepokrijat metodite od klasata Number
+    double doubleValue(){
+    	return (double) broj;
+    }
+    
+    int intValue(){
+    	return broj;
+    }
+    
+    void print(){
+    	cout << "Integer: " << broj << endl;
+    }
+};
+
+class Double: public Number { //TODO da se dodadi izraz za nasleduvanje od Number
+    private:
+    //TODO da se deklariraat promenlivite
+    double broj;
+    public:
+    //TODO konstruktor so eden argument
+    Double(double broj){ this->broj = broj;}
+    //TODO da se prepokrijat metodite od klasata Number
+    double doubleValue(){
+    	return broj;
+    }
+    
+    int intValue(){
+    	return (int) broj;
+    }
+    
+    void print(){
+    	cout << "Double: " << broj << endl;
+    }
+};
+
+class Numbers{
+    private:
+    //TODO deklariranje na promenlivite
+    Number **niza;
+    int n;
+    public:
+    //TODO default konstruktor
+    Numbers(){
+    	n = 0;
+        niza = new Number*[0];
+    }
+    //TODO copy konstruktor
+    Numbers(const Numbers &num){
+    	this->n = num.n;
+        niza = new Number*[num.n];
+        for(int i = 0; i < n; i++)
+            niza[i] = num.niza[i];
+    }
+    //TODO operator =
+    Numbers &operator=(const Numbers &num){
+        if(this!=&num){
+            delete[] niza;
+        	this->n = num.n;
+            niza = new Number*[n];
+            for(int i = 0; i < this->n; i++)
+                niza[i] = num.niza[i];
+        }
+        return *this;
+    }
+    
+    //TODO destruktor
+    ~Numbers(){
+    	
+        delete[] niza;
+    }
+    //TODO operator += (operatorot da prima pointer od objekt od Number, a ne referenca)
+    Numbers &operator+=(Number *num){
+    	Number **tmp = new Number*[n+1];
+        for(int i = 0; i < n; i++)
+            tmp[i] = niza[i];
+        tmp[n++] = num;
+        delete[] niza;
+        niza = tmp;
+        return *this;
+    }
+    
+    //TODO void statistics()
+    void statistics(){
+    	cout << "Count of numbers: " << this->n << endl;
+        double suma = 0;
+        for(int i = 0; i < n; i++)
+            suma+=niza[i]->doubleValue();
+        cout << "Sum of all numbers: " << suma << endl;
+        
+        // Loop sto proveruva dali brojot e int ili double i presmetuva zbir nivni
+        int countINT = 0, countDOUBLE = 0, sumINT = 0;
+        double sumDOUBLE = 0;
+        for(int i = 0; i < n; i++){
+        	Integer *in = dynamic_cast<Integer *>(niza[i]);
+            if(in){
+            	countINT++;
+                sumINT+= niza[i]->intValue();
+            }
+            
+            Double *d = dynamic_cast<Double *>(niza[i]);
+            if(d){
+            	countDOUBLE++;
+            	sumDOUBLE+=niza[i]->doubleValue();
+            }
+        }
+        cout << "Count of integer numbers: " << countINT << endl;
+        cout << "Sum of integer numbers: " << sumINT << endl;
+        cout << "Count of double numbers: " << countDOUBLE << endl;
+        cout << "Sum of double numbers: " << sumDOUBLE << endl;
+    }
+    //TODO void integersLessThan (Integer n)
+    void integersLessThan(Integer n){
+        int count = 0;
+    	int max = n.intValue();
+        for(int i = 0; i < this->n; i++){
+        	Integer *in = dynamic_cast<Integer *>(niza[i]);
+            if(in){
+                if(niza[i]->intValue() < max){
+                    niza[i]->print();
+                    count++;
+                }
+            }
+        }
+        if(count == 0)
+            cout << "None" << endl;
+    }
+    //TODO void doublesBiggerThan (Double n)
+    void doublesBiggerThan(Double n){
+    	int count = 0;
+    	double min = n.doubleValue();
+        for(int i = 0; i < this->n; i++){
+        	Double *d = dynamic_cast<Double *>(niza[i]);
+            if(d){
+                if(niza[i]->doubleValue() >= min){
+                    niza[i]->print();
+                    count++;
+                }
+            }
+        }
+        if(count == 0)
+            cout << "None" << endl;
+    }
+};
+
+int main() {
+	
+	int n;
+	cin>>n;
+	Numbers numbers;
+	for (int i=0;i<n;i++){
+		int type;
+		double number;
+		cin>>type>>number;
+		if (type==0){//Integer object
+			Integer * integer = new Integer((int) number);
+			numbers+=integer;
+		}
+		else {
+			Double * doublee = new Double(number);
+			numbers+=doublee;
+		}
+	}
+	
+	int lessThan;
+	double biggerThan;
+	
+	cin>>lessThan;
+	cin>>biggerThan;		
+	
+	cout<<"STATISTICS FOR THE NUMBERS\n";
+	numbers.statistics();
+	cout<<"INTEGER NUMBERS LESS THAN "<<lessThan<<endl;
+	numbers.integersLessThan(Integer(lessThan));
+	cout<<"DOUBLE NUMBERS BIGGER THAN "<<biggerThan<<endl;
+	numbers.doublesBiggerThan(Double(biggerThan));
+	
+	return 0;
+}
